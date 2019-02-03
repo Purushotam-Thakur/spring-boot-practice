@@ -1,7 +1,11 @@
 package com.in28minutes.rest.webservices.restfullwebservices.user;
 
+
+import static org.springframework.hateoas.mvc.ControllerLinkBuilder.*;
+
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.repository.query.Param;
+import org.springframework.hateoas.Resource;
+import org.springframework.hateoas.mvc.ControllerLinkBuilder;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
@@ -24,13 +28,19 @@ public class userResource {
     }
 
     @GetMapping("/users/{id}")
-    public User retriveAllUsers(@PathVariable int id){
+    public Resource<User> retriveUser(@PathVariable int id){
         User user =  service.findOne(id);
 
         if(user==null)
             throw new UserNotFoundException("id-"+id);
 
-        return user;
+        //HATEOAS Hypermedia As The Engine Of the Application State
+        Resource<User> resource = new Resource<User>(user);
+        ControllerLinkBuilder linkTo =
+                linkTo(methodOn(this.getClass()).retriveAllUsers());
+        resource.add(linkTo.withRel("all-users"));
+
+        return resource;
     }
 
     @DeleteMapping("/users/{id}")
